@@ -14,6 +14,9 @@ from sklearn.metrics.pairwise import pairwise_distances
 
 from config import AnalysisConfig
 
+# Instantiate configuration
+config = AnalysisConfig()
+
 seed = 7
 np.random.seed(seed)
 torch.manual_seed(seed)
@@ -371,7 +374,7 @@ def test_dimensions():
 def best_cluster_count_silhoutte(data):
     # Calculate silhouette scores for different numbers of clusters
     silhouette_scores = []
-    clusters_range = range(AnalysisConfig.min_clusters, AnalysisConfig.max_clusters + 1)
+    clusters_range = range(config.min_clusters, config.max_clusters + 1)
 
     for n_clusters in clusters_range:
         gmm = GaussianMixture(n_components=n_clusters, random_state=40)
@@ -401,7 +404,7 @@ def best_subcluster_count_davies_bouldin(latent_data_df, best_cluster_count, clu
         scaled_latent_data_i = scaler.fit_transform(latent_data_i)
 
         # Step 3: Generate Clusters for Different Numbers (5-10)
-        cluster_range = range(AnalysisConfig.min_subclusters, AnalysisConfig.max_subclusters)
+        cluster_range = range(config.min_subclusters, config.max_subclusters)
         scores = {}
 
         for num_clusters in cluster_range:
@@ -524,7 +527,7 @@ def gmm_subclusters_with_min_size(latent_data_df):
         scaled_cluster_data = scaler.fit_transform(cluster_data.drop(columns=['Cluster']))
 
         # Perform GMM clustering
-        sub_clusters, gmm_subcluster_i = gmm_cluster_with_min_size(scaled_cluster_data, best_subcluster_count_lst[i - 1], AnalysisConfig.min_cluster_size)
+        sub_clusters, gmm_subcluster_i = gmm_cluster_with_min_size(scaled_cluster_data, best_subcluster_count_lst[i - 1], config.min_cluster_size)
 
         gmm_subclusters.append(gmm_subcluster_i)
         
@@ -699,8 +702,8 @@ if __name__ == '__main__':
     #Scaling Rate Compared to Real Life
     k = 0.019/(sum(data_unclean['success'])/len(data_unclean))
 
-    if AnalysisConfig.encoded:
-        latent_data_df, encoding_scaler, vae = encode(data, AnalysisConfig.num_epochs, dim = 10)
+    if config.encoded:
+        latent_data_df, encoding_scaler, vae = encode(data, config.num_epochs, dim = 10)
         latent_data = latent_data_df.values
     else:
         latent_data_df = data
@@ -713,7 +716,7 @@ if __name__ == '__main__':
     # Perform GMM clustering with constraints
     best_cluster_count = best_cluster_count_silhoutte(data_scaled)
 
-    cluster_labels, gmm_cluster = gmm_cluster_with_min_size(data_scaled, best_cluster_count, AnalysisConfig.min_cluster_size)
+    cluster_labels, gmm_cluster = gmm_cluster_with_min_size(data_scaled, best_cluster_count, config.min_cluster_size)
 
     best_subcluster_count_lst = best_subcluster_count_davies_bouldin(latent_data_df, best_cluster_count, cluster_labels)
 
